@@ -11,8 +11,8 @@ import pickle
 import warnings
 
 # tensorflow
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.preprocessing import image
@@ -46,12 +46,13 @@ def load_and_preprocess_image(img_path, w=128, h=128):
     img_array = img_array / 255.0  # Rescale pixel values to [0, 1]
     return img_array
 
-def show_random_images(path = DIR_TRAIN, num_images=16):
+def show_random_images(path, num_images=16):
 
     """ 
     Random selector of target image and display in a plt.figure. 
     path: path to train set directory, default DIR_TRAIN;
     num_images: images to be displayed by the random function, default=16.
+    path: path to trains set, path=DIR_TRAIN
     """
 
     # Define the path to your test directory
@@ -91,10 +92,11 @@ def show_random_images(path = DIR_TRAIN, num_images=16):
     # Display the plot
     plt.show()
 
-def show_number_in_class(path = DIR_TRAIN, strType = 'Training', strColor = 'skyblue'):
+def show_number_in_class(path, strType = 'Training', strColor = 'skyblue'):
     """ 
     Count and plot number of pictures in each class for the directory selected. 
     Output displayed in barplot. 
+    Path =DIR_TRAIN
 
     """
 
