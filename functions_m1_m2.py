@@ -80,7 +80,9 @@ def show_random_images(path, num_images=16):
 
 
     # Set up a 4x4 grid for plotting
-    fig, axes = plt.subplots(num_images/4, num_images/4, figsize=(10, 10))
+    rows=int(num_images/4)
+    columns=int(num_images/2)
+    fig, axes = plt.subplots(rows,columns, figsize=(10, 10))
 
     # Loop through the grid and add an image to each subplot
     for i, ax in enumerate(axes.flat):
@@ -192,3 +194,40 @@ def process_directory(input_directory, output_directory):
                 output_file_path = os.path.join(output_path, file_name)
                 resize_and_save_image(input_file_path, output_file_path)
 
+def select_random_images(dataset, num_images=5):
+    # Convert dataset to a list of batches and take the first batch
+    batch_images, batch_labels = next(iter(dataset.take(1)))
+    
+    # Randomly select num_images from the batch
+    indices = np.random.choice(batch_images.shape[0], size=num_images, replace=False)
+    
+    # Select the images and labels
+    random_images = batch_images.numpy()[indices]
+    random_labels = batch_labels.numpy()[indices]
+    
+    return random_images, random_labels
+
+
+def visualize_images(images, labels):
+    num_images = images.shape[0]
+    
+    # Create a figure with subplots
+    fig, axes = plt.subplots(1, num_images, figsize=(15, 15))
+    
+    # If there's only one image, `axes` will be a single Axes object, not an array
+    if num_images == 1:
+        axes = [axes]
+    
+    # Plot each image
+    for i in range(num_images):
+        ax = axes[i]
+        # Reverse the normalization for display
+        image = (images[i] + 1) * 127.5  # Convert from [-1, 1] to [0, 255]
+        image = image.astype(np.uint8)  # Convert to uint8 for display
+        ax.imshow(image)
+        ax.axis('off')  # Turn off axis
+        
+        # Display the integer label
+        ax.set_title(f'Label: {labels[i]}')
+    
+    plt.show()
