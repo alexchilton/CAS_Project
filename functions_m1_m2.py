@@ -208,7 +208,7 @@ def select_random_images(dataset, num_images=5):
     return random_images, random_labels
 
 
-def visualize_images(images, labels):
+def visualize_pred_images(images, true_labels, predicted_labels):
     num_images = images.shape[0]
     
     # Create a figure with subplots
@@ -228,6 +228,30 @@ def visualize_images(images, labels):
         ax.axis('off')  # Turn off axis
         
         # Display the integer label
-        ax.set_title(f'Label: {labels[i]}')
+        ax.set_title(f'Label: {true_labels[i]}\nPred: {predicted_labels[i]}')
+    
+    plt.show()
+
+def visualize_images(images, true_labels):
+    num_images = images.shape[0]
+    
+    # Create a figure with subplots
+    fig, axes = plt.subplots(1, num_images, figsize=(15, 15))
+    
+    # If there's only one image, `axes` will be a single Axes object, not an array
+    if num_images == 1:
+        axes = [axes]
+    
+    # Plot each image
+    for i in range(num_images):
+        ax = axes[i]
+        # Reverse the normalization for display
+        image = (images[i] + 1) * 127.5  # Convert from [-1, 1] to [0, 255]
+        image = image.astype(np.uint8)  # Convert to uint8 for display
+        ax.imshow(image)
+        ax.axis('off')  # Turn off axis
+        
+        # Display the integer label
+        ax.set_title(f'Label: {true_labels[i]}')
     
     plt.show()
