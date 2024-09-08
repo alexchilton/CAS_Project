@@ -51,7 +51,7 @@ def show_random_images(path, num_images=16):
     """ 
     Random selector of target image and display in a plt.figure. 
     path: path to train set directory, default DIR_TRAIN;
-    num_images: images to be displayed by the random function, default=16.
+    num_images: images to be displayed by the random function, default=16, min=4.
     path: path to trains set, path=DIR_TRAIN
     """
 
@@ -80,7 +80,7 @@ def show_random_images(path, num_images=16):
 
 
     # Set up a 4x4 grid for plotting
-    fig, axes = plt.subplots(4, 4, figsize=(10, 10))
+    fig, axes = plt.subplots(num_images/4, num_images/4, figsize=(10, 10))
 
     # Loop through the grid and add an image to each subplot
     for i, ax in enumerate(axes.flat):
@@ -114,6 +114,46 @@ def show_number_in_class(path, strType = 'Training', strColor = 'skyblue'):
     plt.title('Number of Images per Class in the ' + strType + ' Data')
     plt.xticks(rotation=90, ha='right')  # Rotate class names for better readability
     plt.show()
+
+class ImageLoader:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
+    def load_and_preprocess_image(self, image_path, label):
+        image = tf.io.read_file(image_path)
+        image = tf.image.decode_jpeg(image, channels=3)
+        image = tf.image.resize(image, [self.width, self.height])
+        image = (image / 127.5) - 1
+        return image, label
+
+    def create_dataset(self, path, batch_size=1):
+        # List all images and their labels
+        class_names = sorted([d.name for d in os.scandir(path) if d.is_dir()])
+        class_names_dict = dict(zip(class_names, range(len(class_names))))
+
+        # Create a list of image file patterns for each class
+        file_paths = []
+        labels = []
+        for class_name in class_names:
+            class_path = os.path.join(path, class_name)
+            file_pattern = os.path.join(class_path, '*.*')
+            class_file_paths = [f for f in tf.io.gfile.glob(file_pattern)]
+            file_paths.extend(class_file_paths)
+            labels.extend([class_names_dict[class_name]] * len(class_file_paths))
+
+        # Create a TensorFlow Dataset
+        dataset = tf.data.Dataset.from_tensor_slices((file_paths, labels))
+        dataset = dataset.map(lambda x, y: self.load_and_preprocess_image(x, y), 
+                              num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        
+        # Shuffle, batch, and prefetch the dataset
+        dataset = dataset.shuffle(buffer_size=len(file_paths))  # Shuffle the dataset
+        dataset = dataset.batch(batch_size)
+        dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)  # Prefetch for performance
+        
+        return dataset
+    
 
 def resize_and_save_image(input_path, output_path, size=(128, 128)):
     """ 
@@ -151,3 +191,4 @@ def process_directory(input_directory, output_directory):
                 input_file_path = os.path.join(root, file_name)
                 output_file_path = os.path.join(output_path, file_name)
                 resize_and_save_image(input_file_path, output_file_path)
+
