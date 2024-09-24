@@ -15,7 +15,22 @@ app = FastAPI()
 
 # Load the trained model
 MODEL_LOCATION = '/Users/alexchilton/Downloads/working/best_model.keras'
+#MODEL_LOCATION = '/Users/alexchilton/Downloads/working/resnet_model.keras'
+
 model = load_model(MODEL_LOCATION)
+
+IMG_SIZE = (224, 224)
+IMG_SHAPE = IMG_SIZE + (3,)
+
+def preprocess_image_resnet(img: Image.Image) -> np.ndarray:
+    """
+    Preprocess the input image to the required format for the model.
+    """
+    img = img.resize(IMG_SIZE)  # Resize to the expected input shape
+    img_array = image.img_to_array(img)
+    img_array = np.expand_dims(img_array, axis=0)
+    img_array = img_array / 255.0
+    return img_array
 
 def preprocess_image(img: Image.Image) -> np.ndarray:
     """
@@ -35,6 +50,7 @@ async def predict(file: UploadFile = File(...)):
         img = Image.open(io.BytesIO(contents))
 
         # Preprocess the image
+        #img_array = preprocess_image_resnet(img)
         img_array = preprocess_image(img)
 
         # Make prediction
