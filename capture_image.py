@@ -2,16 +2,14 @@ import cv2
 import os
 import time
 from PIL import Image
-from rembg import remove
+#from rembg import remove
+import requests
 
 from tensorflow.keras.preprocessing import image
 import numpy as np
 import tensorflow as tf
 
-MODEL_LOCATION = '/Users/alexchilton/Downloads/working/best_model.keras'
-
-# Load the trained model
-model = tf.keras.models.load_model(MODEL_LOCATION)
+url = "http://127.0.0.1:8000/predict/"
 
 def load_and_preprocess_image(img_path, w=128, h=128):
     """
@@ -52,10 +50,16 @@ for i in range(5):
         key = cv2.waitKey(0) & 0xFF
         # If 's' key is pressed, save the image
         if key == ord('s'):
-            #image_path = f"captured_image_{i}.jpg"
-            #cv2.imwrite(image_path, frame)
-            #print(f"Saving image to: {os.path.abspath(image_path)}")
-            print("saving")
+            image_path = f"captured_image_{i}.jpg"
+            cv2.imwrite(image_path, frame)
+            print(f"Saving image to: {os.path.abspath(image_path)}")
+            # Open the image file in binary mode
+            with open(image_path, "rb") as image_file:
+                # Send a POST request with the image file
+                response = requests.post(url, files={"file": image_file})
+
+            # Print the response from the server
+            print(response.json())
     # Close the window if 'q' key is pressed
         elif key == ord('q'):
             break
@@ -64,71 +68,3 @@ for i in range(5):
 cam.release()
 cv2.destroyAllWindows()
 
-image_paths = [
-    '/Users/alexchilton/DataspellProjects/CAS_Project2/captured_image_0.jpg',
-    '/Users/alexchilton/DataspellProjects/CAS_Project2/captured_image_1.jpg',
-    '/Users/alexchilton/DataspellProjects/CAS_Project2/captured_image_2.jpg',
-    '/Users/alexchilton/DataspellProjects/CAS_Project2/captured_image_3.jpg',
-    '/Users/alexchilton/DataspellProjects/CAS_Project2/captured_image_4.jpg'
-]
-
-# Directory to save the processed images
-output_dir = '/Users/alexchilton/DataspellProjects/CAS_Project2/processed_images'
-os.makedirs(output_dir, exist_ok=True)
-
-# Process each image
-# Process each image
-for img_path in image_paths:
-    # Load the image
-    img = Image.open(img_path)
-
-    # Remove the background
-    img_no_bg = remove(img)
-
-    # Resize the image to 128x128
-    img_resized = img_no_bg.resize((128, 128))
-
-    # Convert to RGB mode
-    img_rgb = img_resized.convert("RGB")
-
-    # Save the processed image
-    output_path = os.path.join(output_dir, os.path.basename(img_path))
-    img_rgb.save(output_path, format='JPEG')
-    print(f"Processed image saved to: {output_path}")
-# List to store the preprocessed images
-preprocessed_images = []
-
-# Iterate over the image paths
-for img_path in image_paths:
-    # Load and preprocess the image
-    img_array = load_and_preprocess_image(img_path)
-    # Append the preprocessed image to the list
-    preprocessed_images.append(img_array)
-
-print("number of images is ", len(preprocessed_images))
-
-# Print model summary to check input shape
-model.summary()
-
-# Print TensorFlow and Keras versions
-print("TensorFlow version:", tf.__version__)
-print("Keras version:", tf.keras.__version__)
-
-# Ensure the preprocessed_images array has the correct shape and data type
-preprocessed_images = np.vstack(preprocessed_images).astype('float32')
-
-# Print the shape and data type for debugging
-print("preprocessed_images shape:", preprocessed_images.shape)
-print("preprocessed_images dtype:", preprocessed_images.dtype)
-
-try:
-    # Predict the classes of the preprocessed images
-    predictions = model.predict(preprocessed_images)
-
-    # Get the class with the highest probability for each image
-    predicted_classes = np.argmax(predictions, axis=1)
-
-    # Print the predicted classes
-    print("Predicted classes:", predicted_classes)
-except Exception as e:
-    print("Error during prediction:", str(e))
