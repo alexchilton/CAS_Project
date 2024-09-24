@@ -7,6 +7,7 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
+import tensorflow as tf
 import numpy as np
 from PIL import Image
 import io
@@ -14,8 +15,8 @@ import io
 app = FastAPI()
 
 # Load the trained model
-MODEL_LOCATION = '/Users/alexchilton/Downloads/working/best_model.keras'
-#MODEL_LOCATION = '/Users/alexchilton/Downloads/working/resnet_model.keras'
+#MODEL_LOCATION = '/Users/alexchilton/Downloads/working/best_model.keras'
+MODEL_LOCATION = '/Users/alexchilton/Downloads/working/resnet_model.keras'
 
 model = load_model(MODEL_LOCATION)
 
@@ -24,13 +25,15 @@ IMG_SHAPE = IMG_SIZE + (3,)
 
 def preprocess_image_resnet(img: Image.Image) -> np.ndarray:
     """
-    Preprocess the input image to the required format for the model.
+    Preprocess the input image to the required format for the ResNet model.
     """
     img = img.resize(IMG_SIZE)  # Resize to the expected input shape
     img_array = image.img_to_array(img)
     img_array = np.expand_dims(img_array, axis=0)
-    img_array = img_array / 255.0
+    img_array = tf.keras.applications.resnet50.preprocess_input(img_array)
     return img_array
+
+
 
 def preprocess_image(img: Image.Image) -> np.ndarray:
     """
@@ -50,8 +53,8 @@ async def predict(file: UploadFile = File(...)):
         img = Image.open(io.BytesIO(contents))
 
         # Preprocess the image
-        #img_array = preprocess_image_resnet(img)
-        img_array = preprocess_image(img)
+        img_array = preprocess_image_resnet(img)
+        #img_array = preprocess_image(img)
 
         # Make prediction
         predictions = model.predict(img_array)
