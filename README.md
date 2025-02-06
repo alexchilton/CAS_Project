@@ -17,11 +17,11 @@ The final_notebook is from me which firstly does some basic image and class coun
 
 The end of the notebook shows a basic cnn with data augmentation.
 
-Lara then implemented a transfer learning example using resnet.
+We then implemented a transfer learning example using resnet.
 
-I started doing an image capture using a webcam which then converts the image to 128 x 128, removes the background and then tries to do an identification via the model. 
+We implemented an image capture using a webcam which then converts the image to 128 x 128, removes the background and then tries to do an identification via the model. 
 
-It currently has some issues! work in progress...
+It works mostly. It has however been known to identify me as a potato...
 
 The plan after image identification is to send the images to openai to get a recipe suggestion. It would be better as a mobile app as it is 
-fairly difficult to use via webcam! Hands get in the way and add misinformation
+fairly difficult to use via webcam! Hands get in the way and add misinformation etc
